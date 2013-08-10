@@ -1,7 +1,7 @@
 /*
  * Gitty - output-parser.js
  * Author: Gordon Hall
- * 
+ *
  * Exposes parsing functions for different console output
  */
 
@@ -25,6 +25,10 @@ parsers['log'] = function(output) {
 parsers['status'] = function(gitstatus, untracked) {
 	// create status object
 	var status = {
+		branch: {
+			name: '',
+			status: []
+		},
 		staged : [],
 		not_staged : [],
 		untracked : untracked.split('\n').slice(0, untracked.split('\n').length - 1)
@@ -35,14 +39,26 @@ parsers['status'] = function(gitstatus, untracked) {
 	output = gitstatus.split('\n');
 	// iterate over lines
 	output.forEach(function(line) {
+		line = line.toLowerCase();
+
+		// current branch name
+		if (line.indexOf('on branch') > -1) {
+			status.branch.name = line.replace('# on branch ', '');
+		// current branch status on remotes
+		} else if (line.indexOf('your branch is') > -1) {
+			status.branch.status.push({
+				type:  line.match(/your branch is (\w+)/)[1],
+				remote: line.match(/'(.+)'/)[1],
+				commits: parseInt(line.match(/(\d+)\scommit/)[1])
+			});
 		// switch to staged array
-		if (line.toLowerCase().indexOf('changes to be committed') > -1) {
+		} else if (line.indexOf('changes to be committed') > -1) {
 			file_status = 'staged';
 		// or switch to not_staged array
-		} else if (line.toLowerCase().indexOf('changes not staged for commit') > -1) {
+		} else if (line.indexOf('changes not staged for commit') > -1) {
 			file_status = 'not_staged';
 		// or switch to untracked array
-		} else if (line.toLowerCase().indexOf('untracked files') > -1) {
+		} else if (line.indexOf('untracked files') > -1) {
 			file_status = 'untracked';
 		}
 		// check if the line contains a keyword
