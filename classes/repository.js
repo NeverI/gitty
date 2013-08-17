@@ -1,7 +1,7 @@
 /*
  * Gitty - repository.js
  * Author: Gordon Hall
- * 
+ *
  * Primary repository class that exposes all repository level operations
  */
 
@@ -66,7 +66,7 @@ Repository.prototype.log = function(callback, useSync) {
 Repository.prototype.status = function(callback) {
 	var gitStatus = new Command(this.path, 'status', [], '')
 	  , gitLsFiles = new Command(this.path, 'ls-files', ['--other','--exclude-standard'], '')
-	  , repo = this;	
+	  , repo = this;
 	gitStatus.exec(function(error, stdout, stderr) {
 		var status = stdout
 		  , err = error || stderr;
@@ -199,16 +199,10 @@ Repository.prototype.merge = function(branch, callback) {
 };
 
 ////
-// Repository.remote
-// Subset of methods for handling remotes
-////
-Repository.prototype.remote = {};
-
-////
-// Repository.remote.add(remote, url, callback)
+// Repository.remoteAdd(remote, url, callback)
 // Adds a new remote
 ////
-Repository.prototype.remote.add = function(remote, url, callback) {
+Repository.prototype.remoteAdd = function(remote, url, callback) {
 	var options = remote + ' ' + url
 	  , gitRemoteAdd = new Command(this.path, 'remote add', [], options)
 	  , repo = this;
@@ -219,10 +213,10 @@ Repository.prototype.remote.add = function(remote, url, callback) {
 };
 
 ////
-// Repository.remote.setUrl(remote, url, callback)
+// Repository.remoteSetUrl(remote, url, callback)
 // Changes url of an existing remote
 ////
-Repository.prototype.remote.setUrl = function(remote, url, callback) {
+Repository.prototype.remoteSetUrl = function(remote, url, callback) {
 	var options = remote + ' ' + url
 	  , gitRemoteSetUrl = new Command(this.path, 'remote set-url', [], options)
 	  , repo = this;
@@ -233,10 +227,10 @@ Repository.prototype.remote.setUrl = function(remote, url, callback) {
 };
 
 ////
-// Repository.remote.remove(remote, callback)
+// Repository.remoteRemove(remote, callback)
 // Removes the specified remote
 ////
-Repository.prototype.remote.remove = function(remote, callback) {
+Repository.prototype.remoteRemove = function(remote, callback) {
 	var gitRemoteRemove = new Command(this.path, 'remote rm', [], remote)
 	  , repo = this;
 	gitRemoteRemove.exec(function(error, stdout, stderr) {
@@ -246,10 +240,10 @@ Repository.prototype.remote.remove = function(remote, callback) {
 };
 
 ////
-// Repository.remote.list(callback)
+// Repository.remoteList(callback)
 // Passes key-value pairs to callback -> remote : url
 ////
-Repository.prototype.remote.list = function(callback) {
+Repository.prototype.remoteList = function(callback) {
 	var gitRemoteList = new Command(this.path, 'remote', ['-v'], '')
 	  , repo = this;
 	gitRemoteList.exec(function(error, stdout, stderr) {
@@ -282,7 +276,7 @@ Repository.prototype.pull = function(remote, branch, callback, creds) {
 // sync(operation, remote, branch, callback, creds)
 // ----
 // Creates a fake terminal to push or pull from remote
-// This is because SSH does not read creds from stdin, 
+// This is because SSH does not read creds from stdin,
 // but instead, a pseudo-terminal.
 ////
 function sync(path, operation, remote, branch, callback, creds) {
