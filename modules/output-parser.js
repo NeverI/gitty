@@ -118,12 +118,15 @@ parsers['commit'] = function(output) {
 parsers['branch'] = function(output) {
 	var tree = {
 		current : null,
-		others : []
+		others : [],
+		remotes : []
 	},
 	branches = output.split('\n');
 	branches.forEach(function(val, key) {
 		if (val.indexOf('*') > -1) {
 			tree['current'] = val.replace('*', '').trim();
+		} else if (val.indexOf('  remotes/') === 0) {
+			tree['remotes'].push(val.replace('  remotes/', '').trim())
 		} else {
 			if (val) {
 				tree['others'].push(val.trim());
