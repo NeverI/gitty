@@ -189,8 +189,8 @@ Repository.prototype.checkout = function(branch, callback) {
 // Repository.merge(branch, callback)
 // Performs a merge of the current branch with the specified one
 ////
-Repository.prototype.merge = function(branch, callback) {
-	var gitMerge = new Command(this.path, 'merge', [], branch)
+Repository.prototype.merge = function(branch, callback, forceFF) {
+	var gitMerge = new Command(this.path, 'merge', [!forceFF ? '--no-ff' : '' ], branch)
 	  , repo = this;
 	gitMerge.exec(function(error, stdout, stderr) {
 		var err = error || stderr;
