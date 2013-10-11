@@ -172,6 +172,7 @@ Repository.prototype.branch = function(name, callback) {
 ////
 // Repository.checkout(branch, callback)
 // Performs checkout on given branch
+// TODO: proper output parsing
 ////
 Repository.prototype.checkout = function(branch, callback) {
 	var gitCheckout = new Command(this.path, 'checkout', [], branch)
@@ -188,6 +189,7 @@ Repository.prototype.checkout = function(branch, callback) {
 ////
 // Repository.merge(branch, callback)
 // Performs a merge of the current branch with the specified one
+// TODO: proper output parsing
 ////
 Repository.prototype.merge = function(branch, callback, forceFF) {
 	var gitMerge = new Command(this.path, 'merge', [!forceFF ? '--no-ff' : '' ], branch)
