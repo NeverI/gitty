@@ -348,5 +348,43 @@ Repository.prototype.stash = function(option, callback) {
 	});
 };
 
+////
+// Repository.fetch(callback, creds)
+// TODO: proper output parsing
+////
+Repository.prototype.fetch = function(callback, creds)
+{
+	passthroughOutput(this, ['fetch'], callback);
+}
+
+function passthroughOutput(repo, arguments, callback, creds)
+{
+	var pterm = pty.spawn('git', arguments, { cwd : repo.path })
+	  , output = ''
+	  ;
+	pterm.on('data', function(data) {
+		var prompt = data.toLowerCase();
+		if (prompt.indexOf('username') > -1) {
+			pterm.write(creds.user + '\r');
+		} else if (prompt.indexOf('password') > -1) {
+			pterm.write(creds.pass + '\r');
+		} else {
+			output += prompt;
+		}
+	});
+	pterm.on('exit', function() {
+		if (callback && typeof callback === 'function') callback.call(repo, undefined, output);
+	});
+}
+
+////
+// Repository.rebase(branch, callback, creds)
+// TODO: proper output parsing
+////
+Repository.prototype.rebase = function(branch, callback, creds)
+{
+	passthroughOutput(this, ['rebase', branch], callback);
+}
+
 // Export Constructor
 module.exports = Repository;
