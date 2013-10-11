@@ -336,5 +336,17 @@ Repository.prototype.graph = function(callback) {
 	});
 };
 
+////
+// Repository.stash(?option, callback)
+////
+Repository.prototype.stash = function(option, callback) {
+	var gitStash = new Command(this.path, 'stash', [], option ? option : '')
+	  , repo = this;
+	gitStash.exec(function(error, stdout, stderr) {
+		var err = error || stderr;
+		if (callback && typeof callback === 'function') callback.call(repo, err, stdout);
+	});
+};
+
 // Export Constructor
 module.exports = Repository;
