@@ -1,7 +1,7 @@
 /*
  * Gitty - repository.js
  * Author: Gordon Hall
- * 
+ *
  * Primary repository class that exposes all repository level operations
  */
 
@@ -45,9 +45,12 @@ Repository.prototype.init = function(callback, flags) {
 // Repository.log(callback)
 // Passes commit history as array to callback
 ////
-Repository.prototype.log = function(callback, useSync) {
+Repository.prototype.log = function(callback, options, useSync) {
+	options = options ? options : {};
+
 	var format = '--pretty=format:\'{"commit": "%H","author": "%an <%ae>","date": "%ad","message": "%s"},\''
-	  , gitLog = new Command(this.path, 'log', [format], '')
+		, count = options.count ? '-'+options.count : ''
+	  , gitLog = new Command(this.path, 'log', [format, count], '')
 	  , repo = this;
 	gitLog.exec(function(error, stdout, stderr) {
 		var output = stdout
@@ -66,7 +69,7 @@ Repository.prototype.log = function(callback, useSync) {
 Repository.prototype.status = function(callback) {
 	var gitStatus = new Command(this.path, 'status', [], '')
 	  , gitLsFiles = new Command(this.path, 'ls-files', ['--other','--exclude-standard'], '')
-	  , repo = this;	
+	  , repo = this;
 	gitStatus.exec(function(error, stdout, stderr) {
 		var status = stdout
 		  , err = error || stderr;
@@ -144,10 +147,10 @@ Repository.prototype.commit = function(message, callback, useSync) {
 
 ////
 // Repository.branches(callback)
-// Passes object denoting current branch and array of other branches
+// Passes object denoting current branch, array of other branches and array of remote branches
 ////
 Repository.prototype.branches = function(callback) {
-	var gitBranches = new Command(this.path, 'branch', [], '')
+	var gitBranches = new Command(this.path, 'branch', ['-a'], '')
 	  , repo = this;
 	gitBranches.exec(function(error, stdout, stderr) {
 		var err = error || stderr
@@ -172,6 +175,7 @@ Repository.prototype.branch = function(name, callback) {
 ////
 // Repository.checkout(branch, callback)
 // Performs checkout on given branch
+// TODO: proper output parsing
 ////
 Repository.prototype.checkout = function(branch, callback) {
 	var gitCheckout = new Command(this.path, 'checkout', [], branch)
@@ -188,9 +192,10 @@ Repository.prototype.checkout = function(branch, callback) {
 ////
 // Repository.merge(branch, callback)
 // Performs a merge of the current branch with the specified one
+// TODO: proper output parsing
 ////
-Repository.prototype.merge = function(branch, callback) {
-	var gitMerge = new Command(this.path, 'merge', [], branch)
+Repository.prototype.merge = function(branch, callback, forceFF) {
+	var gitMerge = new Command(this.path, 'merge', [!forceFF ? '--no-ff' : '' ], branch)
 	  , repo = this;
 	gitMerge.exec(function(error, stdout, stderr) {
 		var err = error || stderr;
@@ -199,16 +204,10 @@ Repository.prototype.merge = function(branch, callback) {
 };
 
 ////
-// Repository.remote
-// Subset of methods for handling remotes
-////
-Repository.prototype.remote = {};
-
-////
-// Repository.remote.add(remote, url, callback)
+// Repository.remoteAdd(remote, url, callback)
 // Adds a new remote
 ////
-Repository.prototype.remote.add = function(remote, url, callback) {
+Repository.prototype.remoteAdd = function(remote, url, callback) {
 	var options = remote + ' ' + url
 	  , gitRemoteAdd = new Command(this.path, 'remote add', [], options)
 	  , repo = this;
@@ -219,10 +218,10 @@ Repository.prototype.remote.add = function(remote, url, callback) {
 };
 
 ////
-// Repository.remote.setUrl(remote, url, callback)
+// Repository.remoteSetUrl(remote, url, callback)
 // Changes url of an existing remote
 ////
-Repository.prototype.remote.setUrl = function(remote, url, callback) {
+Repository.prototype.remoteSetUrl = function(remote, url, callback) {
 	var options = remote + ' ' + url
 	  , gitRemoteSetUrl = new Command(this.path, 'remote set-url', [], options)
 	  , repo = this;
@@ -233,10 +232,10 @@ Repository.prototype.remote.setUrl = function(remote, url, callback) {
 };
 
 ////
-// Repository.remote.remove(remote, callback)
+// Repository.remoteRemove(remote, callback)
 // Removes the specified remote
 ////
-Repository.prototype.remote.remove = function(remote, callback) {
+Repository.prototype.remoteRemove = function(remote, callback) {
 	var gitRemoteRemove = new Command(this.path, 'remote rm', [], remote)
 	  , repo = this;
 	gitRemoteRemove.exec(function(error, stdout, stderr) {
@@ -246,10 +245,10 @@ Repository.prototype.remote.remove = function(remote, callback) {
 };
 
 ////
-// Repository.remote.list(callback)
+// Repository.remoteList(callback)
 // Passes key-value pairs to callback -> remote : url
 ////
-Repository.prototype.remote.list = function(callback) {
+Repository.prototype.remoteList = function(callback) {
 	var gitRemoteList = new Command(this.path, 'remote', ['-v'], '')
 	  , repo = this;
 	gitRemoteList.exec(function(error, stdout, stderr) {
@@ -282,7 +281,7 @@ Repository.prototype.pull = function(remote, branch, callback, creds) {
 // sync(operation, remote, branch, callback, creds)
 // ----
 // Creates a fake terminal to push or pull from remote
-// This is because SSH does not read creds from stdin, 
+// This is because SSH does not read creds from stdin,
 // but instead, a pseudo-terminal.
 ////
 function sync(path, operation, remote, branch, callback, creds) {
@@ -339,6 +338,79 @@ Repository.prototype.graph = function(callback) {
 			graph = require('../modules/grapher.js')(stdout);
 		}
 		if (callback && typeof callback === 'function') callback.call(repo, err, graph);
+	});
+};
+
+////
+// Repository.stash(?option, callback)
+////
+Repository.prototype.stash = function(option, callback) {
+	var gitStash = new Command(this.path, 'stash', [], option ? option : '')
+	  , repo = this;
+	gitStash.exec(function(error, stdout, stderr) {
+		var err = error || stderr;
+		if (callback && typeof callback === 'function') callback.call(repo, err, stdout);
+	});
+};
+
+////
+// Repository.fetch(callback, creds)
+// TODO: proper output parsing
+////
+Repository.prototype.fetch = function(callback, creds)
+{
+	passthroughOutput(this, ['fetch'], callback);
+}
+
+function passthroughOutput(repo, arguments, callback, creds)
+{
+	var pterm = pty.spawn('git', arguments, { cwd : repo.path })
+	  , output = ''
+	  ;
+	pterm.on('data', function(data) {
+		var prompt = data.toLowerCase();
+		if (prompt.indexOf('username') > -1) {
+			pterm.write(creds.user + '\r');
+		} else if (prompt.indexOf('password') > -1) {
+			pterm.write(creds.pass + '\r');
+		} else {
+			output += prompt;
+		}
+	});
+	pterm.on('exit', function() {
+		if (callback && typeof callback === 'function') callback.call(repo, undefined, output);
+	});
+}
+
+////
+// Repository.rebase(branch, callback, creds)
+// TODO: proper output parsing
+////
+Repository.prototype.rebase = function(branch, callback, creds)
+{
+	passthroughOutput(this, ['rebase', branch], callback);
+}
+
+
+////
+// Repository.revlist(from, to, callback)
+// Resets the repository's HEAD to the specified commit and passes commit log to callback
+////
+Repository.prototype.forEachRef = function(options, callback) {
+
+	var args = Object.keys(options).map(function(arg){ return options[arg] !== undefined ? arg+'='+options[arg] : arg })
+		, forEachRef = new Command(this.path, 'for-each-ref', args, '')
+	  , repo = this
+	  , callback = callback && typeof callback === 'function' ? callback : undefined;
+
+	forEachRef.exec(function(error, stdout, stderr) {
+		var err = error || stderr;
+		if (err) {
+			if (callback) callback.call(repo, err);
+			return;
+		}
+
+		if (callback) callback.call(repo, undefined, stdout);
 	});
 };
 
