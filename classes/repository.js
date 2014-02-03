@@ -45,9 +45,12 @@ Repository.prototype.init = function(callback, flags) {
 // Repository.log(callback)
 // Passes commit history as array to callback
 ////
-Repository.prototype.log = function(callback, useSync) {
+Repository.prototype.log = function(callback, options, useSync) {
+	options = options ? options : {};
+
 	var format = '--pretty=format:\'{"commit": "%H","author": "%an <%ae>","date": "%ad","message": "%s"},\''
-	  , gitLog = new Command(this.path, 'log', [format], '')
+		, count = options.count ? '-'+options.count : ''
+	  , gitLog = new Command(this.path, 'log', [format, count], '')
 	  , repo = this;
 	gitLog.exec(function(error, stdout, stderr) {
 		var output = stdout
@@ -387,6 +390,29 @@ Repository.prototype.rebase = function(branch, callback, creds)
 {
 	passthroughOutput(this, ['rebase', branch], callback);
 }
+
+
+////
+// Repository.revlist(from, to, callback)
+// Resets the repository's HEAD to the specified commit and passes commit log to callback
+////
+Repository.prototype.forEachRef = function(options, callback) {
+
+	var args = Object.keys(options).map(function(arg){ return options[arg] !== undefined ? arg+'='+options[arg] : arg })
+		, forEachRef = new Command(this.path, 'for-each-ref', args, '')
+	  , repo = this
+	  , callback = callback && typeof callback === 'function' ? callback : undefined;
+
+	forEachRef.exec(function(error, stdout, stderr) {
+		var err = error || stderr;
+		if (err) {
+			if (callback) callback.call(repo, err);
+			return;
+		}
+
+		if (callback) callback.call(repo, undefined, stdout);
+	});
+};
 
 // Export Constructor
 module.exports = Repository;
