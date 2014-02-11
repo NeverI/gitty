@@ -44,7 +44,7 @@ parsers['status'] = function(gitstatus, untracked) {
 
 		// current branch name
 		if (line.indexOf('on branch') > -1) {
-			status.branch.name = line.replace('# on branch ', '');
+			status.branch.name = caseSensitive.match(/.+ branch (.+)/)[1].trim();
 		// current branch status on remotes
 		} else if (line.indexOf('your branch is') > -1) {
 			status.branch.status.push({
