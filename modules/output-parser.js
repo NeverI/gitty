@@ -39,6 +39,7 @@ parsers['status'] = function(gitstatus, untracked) {
 	output = gitstatus.split('\n');
 	// iterate over lines
 	output.forEach(function(line) {
+		var caseSensitive = line;
 		line = line.toLowerCase();
 
 		// current branch name
@@ -49,7 +50,7 @@ parsers['status'] = function(gitstatus, untracked) {
 			status.branch.status.push({
 				type:  line.match(/your branch is (\w+)/)[1],
 				remote: line.match(/'(.+)'/)[1],
-				commits: parseInt(line.match(/(\d+)\scommit/)[1])
+				commits: line.match(/(\d+)\scommit/) ? parseInt(line.match(/(\d+)\scommit/)[1]) : 0
 			});
 		// switch to staged array
 		} else if (line.indexOf('changes to be committed') > -1) {
@@ -66,7 +67,7 @@ parsers['status'] = function(gitstatus, untracked) {
 		    line.indexOf('new file') > -1 ||
 		    line.indexOf('deleted') > -1) {
 			// then remove # and all whitespace and split at the colon
-			var fileinfo = line.substr(1).trim().split(':');
+			var fileinfo = caseSensitive.substr(1).trim().split(':');
 			// push a new object into the current array
 			status[file_status].push({
 				file : fileinfo[1].trim(),
