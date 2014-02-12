@@ -19,6 +19,34 @@ parsers['log'] = function(output) {
 	return commits;
 };
 
+///
+// upstream state
+///
+parsers['upstream'] = function(line)
+{
+	var
+		type, commits;
+
+	if (line.indexOf('diverged') != -1) {
+		type = 'diverged';
+	} else if (line.indexOf('up-to-date') != -1) {
+		type = 'upToDate';
+	} else if (line.indexOf('our branch is ') != -1) {
+		type = line.match(/branch is (\w+)/)[1];
+		commits: line.match(/(\d+)\scommit/) ? parseInt(line.match(/(\d+)\scommit/)[1]) : 0;
+	}
+
+	if (!type) {
+		return;
+	}
+
+	return {
+			type:  type,
+			commits: commits,
+			remote: line.match(/'(.+)'/)[1]
+		};
+}
+
 ////
 // git status
 ////
@@ -46,12 +74,8 @@ parsers['status'] = function(gitstatus, untracked) {
 		if (line.indexOf('on branch') > -1) {
 			status.branch.name = caseSensitive.match(/.+ branch (.+)/)[1].trim();
 		// current branch status on remotes
-		} else if (line.indexOf('your branch is') > -1) {
-			status.branch.status.push({
-				type:  line.match(/your branch is (\w+)/)[1],
-				remote: line.match(/'(.+)'/)[1],
-				commits: line.match(/(\d+)\scommit/) ? parseInt(line.match(/(\d+)\scommit/)[1]) : 0
-			});
+		} else if (line.indexOf('your branch') > -1) {
+			status.branch.status.push(parsers['upstream'](caseSensitive));
 		// switch to staged array
 		} else if (line.indexOf('changes to be committed') > -1) {
 			file_status = 'staged';
@@ -112,6 +136,17 @@ parsers['commit'] = function(output) {
 		};
 	}
 };
+
+////
+// git checkout
+////
+parsers['checkout'] = function(error, output) {
+	if (error.indexOf('Switched to branch') === 0) {
+		return { upstream: parsers['upstream'](output)};
+	}
+
+	return { err: error};
+}
 
 ////
 // git branch
