@@ -176,8 +176,8 @@ Repository.prototype.branch = function(name, callback) {
 // Repository.checkout(branch, callback)
 // Performs checkout on given branch
 ////
-Repository.prototype.checkout = function(branch, callback) {
-	var gitCheckout = new Command(this.path, 'checkout', [], branch)
+Repository.prototype.checkout = function(branch, opts, callback) {
+	var gitCheckout = new Command(this.path, 'checkout', opts, branch)
 	  , repo = this;
 	gitCheckout.exec(function(error, stdout, stderr) {
 		if (error) {
