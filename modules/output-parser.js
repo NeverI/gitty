@@ -141,7 +141,7 @@ parsers['commit'] = function(output) {
 // git checkout
 ////
 parsers['checkout'] = function(error, output) {
-	if (error.indexOf('Switched to branch') === 0) {
+	if (error.indexOf('Switched to') === 0) {
 		return { upstream: parsers['upstream'](output)};
 	}
 
