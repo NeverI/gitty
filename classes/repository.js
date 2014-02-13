@@ -173,6 +173,19 @@ Repository.prototype.branch = function(name, callback) {
 };
 
 ////
+// Repository.deleteBranch(branch, callback, unmerged)
+// Delete a branch
+////
+Repository.prototype.deleteBranch = function(name, callback, unmerged) {
+	var gitBranch = new Command(this.path, 'branch', [unmerged ? '-D' : '-d'], name)
+	  , repo = this;
+	gitBranch.exec(function(error, stdout, stderr) {
+		var err = error || stderr;
+		if (callback && typeof callback === 'function') callback.call(repo, err);
+	});
+};
+
+////
 // Repository.checkout(branch, callback)
 // Performs checkout on given branch
 ////
