@@ -371,9 +371,13 @@ Repository.prototype.stash = function(option, callback) {
 // Repository.fetch(callback, creds)
 // TODO: proper output parsing
 ////
-Repository.prototype.fetch = function(callback, creds)
+Repository.prototype.fetch = function(callback, prune, creds)
 {
-	passthroughOutput(this, ['fetch'], callback);
+  var args = ['fetch'];
+  if (prune) {
+    args.push('--prune');
+  }
+	passthroughOutput(this, args, callback);
 }
 
 function passthroughOutput(repo, arguments, callback, creds)
