@@ -377,7 +377,7 @@ Repository.prototype.fetch = function(callback, prune, creds)
   if (prune) {
     args.push('--prune');
   }
-	passthroughOutput(this, args, callback);
+	passthroughOutput(this, args, callback, creds);
 }
 
 function passthroughOutput(repo, arguments, callback, creds)
@@ -406,7 +406,7 @@ function passthroughOutput(repo, arguments, callback, creds)
 ////
 Repository.prototype.rebase = function(branch, callback, creds)
 {
-	passthroughOutput(this, ['rebase', branch], callback);
+	passthroughOutput(this, ['rebase', branch], callback, creds);
 }
 
 
