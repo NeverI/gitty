@@ -310,9 +310,9 @@ function sync(path, operation, remote, branch, callback, creds) {
 		} else if (prompt.indexOf('password') > -1) {
 			pterm.write(creds.pass + '\r');
 		} else if ((prompt.indexOf('error') > -1) || (prompt.indexOf('fatal') > -1)) {
-			err = parse['syncErr'](prompt);
+			err = prompt;
 		} else {
-			succ = parse['syncSuccess'](prompt);
+			succ = prompt;
 		}
 	});
 	pterm.on('exit', function() {
@@ -392,7 +392,7 @@ function passthroughOutput(repo, arguments, callback, creds)
 		} else if (prompt.indexOf('password') > -1) {
 			pterm.write(creds.pass + '\r');
 		} else {
-			output += prompt;
+			output += data;
 		}
 	});
 	pterm.on('exit', function() {
