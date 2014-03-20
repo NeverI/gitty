@@ -91,12 +91,14 @@ parsers['status'] = function(gitstatus, untracked) {
 		    line.indexOf('new file') > -1 ||
 		    line.indexOf('deleted') > -1) {
 			// then remove # and all whitespace and split at the colon
-			var fileinfo = caseSensitive.substr(1).trim().split(':');
-			// push a new object into the current array
-			status[file_status].push({
-				file : fileinfo[1].trim(),
-				status : fileinfo[0]
-			});
+      var fileinfo = caseSensitive.substr(1).trim().split(':');
+      // push a new object into the current array
+      if (fileinfo[1] != undefined) {
+        status[file_status].push({
+          file : fileinfo[1].trim(),
+          status : fileinfo[0]
+        });
+      }
 		}
 	});
 	return status;
