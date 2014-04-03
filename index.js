@@ -1,7 +1,7 @@
 /*
  * Gitty - index.js
  * Author: Gordon Hall
- * 
+ *
  * Initializes module and exposes public methods
  */
 
@@ -15,7 +15,7 @@ gitty = function(path) {
 };
 
 ////
-// config(key, val, callback) 
+// config(key, val, callback)
 // Does global Git configuration
 ////
 function config(key, val, callback) {
@@ -29,7 +29,7 @@ function config(key, val, callback) {
 };
 
 ////
-// clone(path, url, callback, creds) 
+// clone(path, url, callback, creds)
 // Clones the repository at url into the specified path
 ////
 function clone(path, url, callback, creds) {
@@ -54,9 +54,27 @@ function clone(path, url, callback, creds) {
 	});
 };
 
+function getVersion()
+{
+	var
+		version,
+		command = new Command('/', '', ['--version']);
+	command.exec(function(err, stdout){
+		if (err) {
+			throw err;
+		}
+
+		version = stdout.replace('git version ', '');
+		gitty.getVersion = function() { return version; };
+	}, true);
+
+	return version;
+}
+
 gitty.config = config;
 gitty.clone = clone;
 gitty.Repository = Repository;
 gitty.Command = Command;
+gitty.getVersion = getVersion;
 
 module.exports = gitty;
