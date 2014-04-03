@@ -26,14 +26,17 @@ Command.prototype.exec = function(callback, sync) {
 		exec(this.command, { cwd : this.repo }, callback);
 	} else {
 		try {
+			var cwd = process.env.PWD;
 			process.chdir(this.repo);
 			var result = execSync(this.command)
+			process.chdir(cwd);
 			if (result.code != 0) {
 				callback.call(this, result, null);
 			} else {
 				callback.call(this, null, result.stdout.trim());
 			}
 		} catch(e) {
+			process.chdir(cwd);
 			callback.call(this, e, null);
 		}
 	}
