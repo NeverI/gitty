@@ -1,14 +1,14 @@
 /*
  * Gitty - command.js
  * Author: Gordon Hall
- * 
+ *
  * Handles the execution of Git commands
  */
 
 var exec = require('child_process').exec
-  , execSync = require('execSync').stdout
+  , execSync = require('execSync').exec
   , Command;
-  
+
 Command = function(repo_path, operation, flags, options) {
 	this.repo = repo_path;
 	// assemble command
@@ -18,7 +18,7 @@ Command = function(repo_path, operation, flags, options) {
 		this.command += ' ' + flags[flag];
 	}
 	// add options
-	this.command +=  ' ' + options;	
+	this.command +=  ' ' + options;
 };
 
 Command.prototype.exec = function(callback, sync) {
@@ -27,8 +27,12 @@ Command.prototype.exec = function(callback, sync) {
 	} else {
 		try {
 			process.chdir(this.repo);
-			var stdout = execSync(this.command)
-			callback.call(this, null, stdout);
+			var result = execSync(this.command)
+			if (result.code != 0) {
+				callback.call(this, result, null);
+			} else {
+				callback.call(this, null, result.stdout.trim());
+			}
 		} catch(e) {
 			callback.call(this, e, null);
 		}
